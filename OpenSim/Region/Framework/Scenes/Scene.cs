@@ -5903,12 +5903,18 @@ namespace OpenSim.Region.Framework.Scenes
             string caller = calls.GetFrame (1).GetMethod ().Name;
             if (caller != "osGrantScriptPermissions") 
             {
-                m_log.ErrorFormat("[SCENE]: {0} cannot adjust script perms!",caller);
+                m_log.ErrorFormat ("[SCENE]: {0} cannot adjust script perms!", caller);
                 return false;
             }
 
-            if (string.IsNullOrEmpty(function))
+            if (string.IsNullOrEmpty (function))
                 return false;
+
+            if (function == "osGrantScriptPermissions" || function == "osRevokeScriptPermissions") 
+            {
+                m_log.ErrorFormat ("[SCENE]: {0} is not recursive. Recipient cannot adjust script perms!", function);
+                return false;
+            }
 
             if (!m_DynaPerms.ContainsKey(function)) 
             {
@@ -5924,11 +5930,13 @@ namespace OpenSim.Region.Framework.Scenes
             return true;
         }
 
-        public bool GetOsslPerms(UUID avatar, string function)
+        public bool GetOsslPerms (UUID avatar, string function)
         {
-            if (m_DynaPerms.ContainsKey(function))
-                if(m_DynaPerms[function].Contains(avatar))
+            if (m_DynaPerms.ContainsKey (function)) 
+            {
+                if (m_DynaPerms [function].Contains (avatar))
                     return true;
+            }
 
             return false;
         }
@@ -5948,11 +5956,14 @@ namespace OpenSim.Region.Framework.Scenes
                 if (m_DynaPerms [function].Contains (key)) 
                 {
                     m_DynaPerms [function].Remove (key);
+
                     if (m_DynaPerms [function].Count == 0)
                         m_DynaPerms.Remove (function);
+
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
     }
 }

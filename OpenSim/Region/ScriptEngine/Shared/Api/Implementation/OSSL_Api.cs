@@ -434,13 +434,13 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
             System.Threading.Thread.Sleep(delay);
         }
 
-        private bool GetDynaPerms(UUID owner, UUID creator, UUID group, string function)
+        internal bool GetDynaPerms(UUID owner, UUID creator, UUID group, string function)
         {
             if (World.GetOsslPerms(owner, function))
                 return true;
             if (World.GetOsslPerms(creator, function))
                 return true;
-            if (World.GetOsslPerms(creator, function))
+            if (World.GetOsslPerms(group, function))
                 return true;
 
             return false;
@@ -449,6 +449,9 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
         public void osGrantScriptPermissions(LSL_Key avatar, LSL_List osfunctions)
         {
+            if (!World.Permissions.CanIssueEstateCommand(m_host.OwnerID, false))
+                return;
+
             CheckThreatLevel(ThreatLevel.Severe, "osGrantScriptPermissions");
             m_host.AddScriptLPS(1);
             UUID key;
@@ -463,6 +466,9 @@ namespace OpenSim.Region.ScriptEngine.Shared.Api
 
         public void osRevokeScriptPermissions (LSL_Key avatar, LSL_List osfunctions)
         {
+            if (!World.Permissions.CanIssueEstateCommand(m_host.OwnerID, false))
+                return;
+
             CheckThreatLevel(ThreatLevel.Severe, "osRevokeScriptPermissions");
             m_host.AddScriptLPS(1);
             UUID key;
